@@ -265,6 +265,9 @@ async function predecirPaciente() {
         `)
         .join('');
 
+      const diagnostico = data.diagnostico_detallado || '';
+      const recomendaciones = Array.isArray(data.recomendaciones) ? data.recomendaciones : [];
+
       div.innerHTML = `
         <div class="alert alert-${color === 'orange' ? 'warning' : color} border-0 mt-2">
           <div class="d-flex align-items-center gap-3">
@@ -283,7 +286,26 @@ async function predecirPaciente() {
           <div class="small fw-semibold mb-1">Distribución por clases:</div>
           ${distHtml}
         </div>`;
+
+      const detalle = getEl('prediccion-detalle');
+      if (detalle) {
+        const recHtml = recomendaciones.length
+          ? '<ul class="mb-0">' + recomendaciones.map(r => `<li>${r}</li>`).join('') + '</ul>'
+          : '<div class="text-muted">Sin recomendaciones.</div>';
+
+        detalle.innerHTML = `
+          <div class="card border-0 shadow-sm mt-3">
+            <div class="card-body">
+              <div class="fw-bold mb-2">Diagnóstico detallado</div>
+              <div class="small text-muted mb-3" style="white-space: pre-line;">${diagnostico}</div>
+
+              <div class="fw-bold mb-2">Recomendaciones</div>
+              ${recHtml}
+            </div>
+          </div>`;
+      }
     } else {
+
       div.innerHTML = `<div class="alert alert-danger">${data.error || 'No se pudo predecir'}</div>`;
     }
   } catch (e) {

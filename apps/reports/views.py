@@ -5,7 +5,7 @@ import io, csv
 from datetime import datetime
 from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from apps.authentication.permissions import es_rol
 from apps.etl.models import Paciente, HistorialETL
 from apps.etl.serializers import PacienteSerializer
 from reportlab.lib.pagesizes import letter
@@ -14,7 +14,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador')])
 def exportar_csv(request):
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'attachment; filename="pacientes.csv"'
@@ -30,7 +30,7 @@ def exportar_csv(request):
     return response
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador')])
 def exportar_excel(request):
     try:
         import openpyxl
@@ -79,7 +79,7 @@ def exportar_excel(request):
     return response
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'medico', 'analista')])
 def historial_etl_reporte(request):
     from rest_framework.response import Response
     from apps.etl.serializers import HistorialETLSerializer
@@ -87,7 +87,7 @@ def historial_etl_reporte(request):
     return Response(data)
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'medico', 'analista')])
 def exportar_pdf(request):
     # Crear buffer en memoria
     buffer = io.BytesIO()

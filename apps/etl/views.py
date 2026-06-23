@@ -4,6 +4,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
+from apps.authentication.permissions import es_rol
 from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
@@ -19,7 +20,7 @@ class PacienteViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [es_rol('administrador', 'medico')]
 
     @extend_schema(
         tags=['pacientes'],
@@ -54,7 +55,7 @@ class PacienteViewSet(viewsets.ReadOnlyModelViewSet):
     responses={200: HistorialETLSerializer},
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'analista')])
 def ejecutar_etl_view(request):
     filepath = str(settings.BASE_DIR / 'datasets' / 'dataset_clinico.xlsx')
     if not os.path.exists(filepath):
@@ -78,7 +79,7 @@ def ejecutar_etl_view(request):
     responses={200: HistorialETLSerializer},
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'analista')])
 @parser_classes([MultiPartParser])
 def subir_dataset(request):
     try:
@@ -129,7 +130,7 @@ def subir_dataset(request):
     responses={200: HistorialETLSerializer(many=True)},
 )
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'analista')])
 def historial_etl(request):
     registros = HistorialETL.objects.all()[:20]
     return Response(HistorialETLSerializer(registros, many=True).data)

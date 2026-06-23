@@ -58,8 +58,11 @@ async function cargarDashboard() {
 
   } catch(e) {
     console.error('Error cargando dashboard:', e);
+    const cont = document.getElementById('dashboard-error');
+    if (cont) cont.innerHTML = `<div class="alert alert-danger mb-0">No se pudo cargar el dashboard. Revisa consola.</div>`;
   }
 }
+
 
 function renderGraficaRiesgo(data) {
   if (!data) return;

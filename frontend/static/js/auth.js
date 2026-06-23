@@ -4,6 +4,13 @@ const API = '/api';
 
 function getToken() { return localStorage.getItem('access'); }
 function getRefresh() { return localStorage.getItem('refresh'); }
+function getRol() {
+  var rol = localStorage.getItem('rol');
+  if (rol) return rol;
+  var token = getToken();
+  if (!token) return '';
+  try { return JSON.parse(atob(token.split('.')[1])).rol || ''; } catch(e) { return ''; }
+}
 
 async function authFetch(url, options = {}) {
   options.headers = options.headers || {};
@@ -42,17 +49,32 @@ function cerrarSesion() {
   window.location.href = '/login/';
 }
 
-// Proteger páginas (redirige si no hay token)
+const ROLES_PAGINAS = {
+  '/':          ['administrador', 'medico'],
+  '/pacientes/': ['administrador', 'medico'],
+  '/etl/':      ['administrador', 'analista'],
+  '/ml/':       ['administrador', 'analista'],
+};
+
+// Proteger páginas (redirige si no hay token o el rol no tiene acceso)
 (function protegerRuta() {
+  const ruta = window.location.pathname;
   const rutasPublicas = ['/login/'];
-  if (!rutasPublicas.includes(window.location.pathname) && !getToken()) {
-    window.location.href = '/login/';
+  if (rutasPublicas.includes(ruta)) return;
+  if (!getToken()) { window.location.href = '/login/'; return; }
+
+  const rol = getRol();
+  const rolesPagina = ROLES_PAGINAS[ruta];
+  if (rolesPagina && !rolesPagina.includes(rol)) {
+    if (ruta === '/') return;
+    window.location.href = '/';
+    return;
   }
+
   // Mostrar nombre de usuario en sidebar
   const el = document.getElementById('usuario-nombre');
   if (el) {
     const username = localStorage.getItem('username') || '—';
-    const rol = localStorage.getItem('rol') || '';
     el.textContent = `${username} · ${rol}`;
   }
 })();

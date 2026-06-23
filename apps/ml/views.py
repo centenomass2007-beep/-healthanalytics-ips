@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from apps.authentication.permissions import es_rol
 from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, OpenApiExample
@@ -22,7 +22,7 @@ from .serializers import ModeloMLSerializer, PrediccionSerializer
         value={'algoritmo': 'random_forest'}, request_only=True)],
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'analista')])
 def entrenar(request):
     algoritmo = request.data.get('algoritmo', 'random_forest')
     try:
@@ -75,7 +75,7 @@ def entrenar(request):
              'required': ['paciente_id']}},
 )
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'analista')])
 def predecir(request):
     paciente_id = request.data.get('paciente_id')
     if not paciente_id:
@@ -89,7 +89,7 @@ def predecir(request):
 
 @extend_schema(tags=['ml'], summary='Listar modelos entrenados')
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'analista')])
 def modelos_lista(request):
     modelos = ModeloML.objects.all()[:10]
     return Response(ModeloMLSerializer(modelos, many=True).data)
@@ -97,7 +97,7 @@ def modelos_lista(request):
 
 @extend_schema(tags=['ml'], summary='Listar predicciones realizadas')
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'analista')])
 def predicciones_lista(request):
     preds = PrediccionPaciente.objects.all()[:50]
     return Response(PrediccionSerializer(preds, many=True).data)

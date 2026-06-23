@@ -1,18 +1,21 @@
-# TODO - Reto técnico ETL (Django + JS)
+# TODO - Mejora predicción + diagnóstico detallado
 
-## Paso 1
-- [x] Revisar implementación actual de frontend `etl.js` y backend `apps/etl/views.py`.
+## Paso 1: implementar lógica de diagnóstico y recomendaciones
+- [x] Editar `apps/ml/services.py`
+  - [x] Construir `diagnostico_detallado` según `riesgo_predicho`, `probabilidad` y valores de FEATURES del paciente
+  - [x] Generar `recomendaciones` (lista) basada en heurísticas por feature
+  - [x] Devolver estos campos en el dict del endpoint `predecir_paciente`
 
-## Paso 2
-- [ ] Corregir `frontend/static/js/etl.js` para enviar correctamente `FormData` y el header `X-CSRFToken`.
-- [ ] Hacer que el frontend muestre errores detallados devueltos por el backend (JSON con `error/detalle/logs`).
+## Paso 2: actualizar UI
+- [x] Editar `frontend/templates/ml/index.html`
+  - [x] Agregar contenedor/estructura para mostrar diagnóstico y recomendaciones
 
-## Paso 3
-- [ ] Corregir backend `apps/etl/views.py` (vista `subir_dataset`) con `try/except` robusto y respuestas JSON consistentes y con códigos HTTP correctos.
+## Paso 3: actualizar frontend JS
+- [x] Editar `frontend/static/js/ml.js`
+  - [x] Renderizar `diagnostico_detallado` y `recomendaciones` en `predecirPaciente()`
 
-## Paso 4
-- [ ] Validar que la lectura de Excel funcione (si falta, instalar `openpyxl`).
 
-## Paso 5
-- [ ] Ejecutar pruebas manuales: subir `dataset_clinico.xlsx` y un CSV; verificar UI y errores.
+## Paso 4: validar
+- [ ] Probar el endpoint `/api/ml/predecir/` y verificar que la respuesta incluya nuevos campos
+- [ ] Probar la pantalla ML y verificar que se rendericen en UI
 

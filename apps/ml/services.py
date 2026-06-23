@@ -115,10 +115,224 @@ def entrenar_modelo(algoritmo: str = 'random_forest') -> ModeloML:
                         'clases': list(le.classes_)}
 
 
+def _construir_diagnostico_y_recomendaciones(*, riesgo: str, probabilidad: float, paciente_features: dict) -> tuple[str, list[str]]:
+    """Genera diagnóstico detallado y recomendaciones con heurísticas por variables.
+
+    Nota: esto mejora la interpretación/explicación del resultado.
+    """
+
+    edad = paciente_features.get('edad')
+    imc = paciente_features.get('imc')
+    glucosa = paciente_features.get('glucosa')
+    colesterol = paciente_features.get('colesterol')
+    ps = paciente_features.get('presion_sistolica')
+    pd = paciente_features.get('presion_diastolica')
+    fc = paciente_features.get('frecuencia_cardiaca')
+    spo2 = paciente_features.get('saturacion_oxigeno')
+    temp = paciente_features.get('temperatura')
+    fumador = bool(paciente_features.get('fumador'))
+    alcohol = bool(paciente_features.get('consumo_alcohol'))
+    antecedentes = bool(paciente_features.get('antecedentes_familiares'))
+
+    # Señales (heurísticas) -> (texto_corto, severidad)
+    señales: list[tuple[str, int]] = []
+
+    if imc is not None:
+        try:
+            imc_v = float(imc)
+            if imc_v >= 30:
+                señales.append((f"IMC elevado ({imc_v:.1f}) sugiere obesidad.", 3))
+            elif imc_v >= 25:
+                señales.append((f"IMC en rango de sobrepeso ({imc_v:.1f}).", 2))
+        except Exception:
+            pass
+
+    if glucosa is not None:
+        try:
+            g = float(glucosa)
+            if g >= 126:
+                señales.append((f"Glucosa alta (≥126): posible hiperglucemia.", 3))
+            elif g >= 100:
+                señales.append((f"Glucosa elevada (100–125): posible prediabetes.", 2))
+        except Exception:
+            pass
+
+    if colesterol is not None:
+        try:
+            c = float(colesterol)
+            if c >= 240:
+                señales.append((f"Colesterol alto (≥240): riesgo cardiovascular.", 3))
+            elif c >= 200:
+                señales.append((f"Colesterol en rango alto (200–239).", 2))
+        except Exception:
+            pass
+
+    if ps is not None and pd is not None:
+        try:
+            ps_v = float(ps)
+            pd_v = float(pd)
+            # Rangos simplificados
+            if ps_v >= 180 or pd_v >= 120:
+                señales.append(("Presión arterial muy elevada: requiere evaluación prioritaria.", 3))
+            elif ps_v >= 140 or pd_v >= 90:
+                señales.append(("Presión arterial elevada: controlar y vigilar complicaciones.", 2))
+            elif ps_v >= 120 or pd_v >= 80:
+                señales.append(("Presión arterial en rango alto-normal: educación y seguimiento.", 1))
+        except Exception:
+            pass
+
+    if fc is not None:
+        try:
+            fc_v = float(fc)
+            if fc_v >= 100:
+                señales.append((f"Frecuencia cardiaca alta ({fc_v:.0f} lpm).", 2))
+            elif fc_v < 50:
+                señales.append((f"Frecuencia cardiaca baja ({fc_v:.0f} lpm).", 1))
+        except Exception:
+            pass
+
+    if spo2 is not None:
+        try:
+            s = float(spo2)
+            if s < 92:
+                señales.append((f"Saturación de O2 baja ({s:.0f}%): alerta respiratoria.", 3))
+            elif s < 95:
+                señales.append((f"Saturación de O2 algo baja ({s:.0f}%).", 2))
+        except Exception:
+            pass
+
+    if temp is not None:
+        try:
+            t = float(temp)
+            if t >= 38:
+                señales.append((f"Temperatura elevada ({t:.1f}°C): considerar proceso infeccioso.", 2))
+        except Exception:
+            pass
+
+    if fumador:
+        señales.append(("Tabaquismo: incrementa riesgo cardiovascular y respiratorio.", 2))
+
+    if alcohol:
+        señales.append(("Consumo de alcohol: evaluar cantidad/periodicidad y riesgos asociados.", 1))
+
+    if antecedentes:
+        señales.append(("Antecedentes familiares: mayor probabilidad basal.", 2))
+
+    # Nivel de confianza
+    # (Se asume que riesgo_predicho es una clase; la probabilidad refleja confianza del modelo)
+    confianza = "alta" if probabilidad >= 0.65 else ("media" if probabilidad >= 0.5 else "baja")
+
+    # Diagnóstico base según riesgo
+    riesgo_norm = (riesgo or "").strip().lower()
+    if riesgo_norm in ["alto", "high", "critico", "crítico", "critico/a", "criticoa", "grave"]:
+        diagnostico = "Riesgo elevado de enfermedad." 
+    elif riesgo_norm in ["medio", "med", "intermedio"]:
+        diagnostico = "Riesgo intermedio de enfermedad: se recomienda control y prevención." 
+    else:
+        diagnostico = "Riesgo bajo de enfermedad." 
+
+    if confianza == "baja":
+        diagnostico += " La predicción tiene confianza limitada; considere complementar con evaluación clínica y controles." 
+    elif confianza == "media":
+        diagnostico += " La predicción tiene confianza moderada." 
+    else:
+        diagnostico += " La predicción tiene confianza alta." 
+
+    # Añadir resumen por señales
+    if señales:
+        # Ordenar por severidad descendente
+        señales_sorted = sorted(señales, key=lambda x: x[1], reverse=True)
+        # Tomar top 4
+        top = [s for s, _ in señales_sorted[:4]]
+        diagnostico += "\n" + "Indicadores relevantes: " + " ".join(top)
+
+    # Recomendaciones
+    recomendaciones: list[str] = []
+
+    # Reglas por señales + riesgo
+    # Presión arterial
+    if ps is not None and pd is not None:
+        try:
+            ps_v = float(ps); pd_v = float(pd)
+            if ps_v >= 140 or pd_v >= 90:
+                recomendaciones.append("Control de presión arterial: seguimiento con profesional y adhesión a tratamiento si aplica.")
+                recomendaciones.append("Reducir sal en la dieta, actividad física regular y monitoreo domiciliario cuando sea posible.")
+        except Exception:
+            pass
+
+    # Glucosa
+    if glucosa is not None:
+        try:
+            g = float(glucosa)
+            if g >= 100:
+                recomendaciones.append("Evaluar metabolismo de glucosa: solicitud de HbA1c/curva y plan dietario/actividad.")
+        except Exception:
+            pass
+
+    # Colesterol
+    if colesterol is not None:
+        try:
+            c = float(colesterol)
+            if c >= 200:
+                recomendaciones.append("Perfil lipídico: revisar dieta (grasas saludables), actividad y considerar manejo farmacológico si lo indica el médico.")
+        except Exception:
+            pass
+
+    # IMC
+    if imc is not None:
+        try:
+            imc_v = float(imc)
+            if imc_v >= 25:
+                recomendaciones.append("Plan de nutrición y actividad para mejorar IMC (metas realistas y seguimiento profesional).")
+        except Exception:
+            pass
+
+    # Oxigenación
+    if spo2 is not None:
+        try:
+            s = float(spo2)
+            if s < 95:
+                recomendaciones.append("Si hay síntomas respiratorios, priorizar evaluación clínica; revisar causas y tratamiento indicado.")
+        except Exception:
+            pass
+
+    # Tabaquismo
+    if fumador:
+        recomendaciones.append("Abandono del tabaco: programas de cesación y soporte. Es una de las intervenciones de mayor impacto.")
+
+    # Antecedentes
+    if antecedentes:
+        recomendaciones.append("Con antecedentes familiares, intensificar prevención: chequeos periódicos y estilo de vida saludable.")
+
+    # Si el riesgo es alto o confianza media/baja, añadir recomendación general
+    if riesgo_norm in ["alto", "critico", "crítico", "grave"] or confianza != "alta":
+        recomendaciones.append("Recomendación general: validar hallazgos con evaluación clínica completa y exámenes complementarios según criterio médico.")
+
+    if not recomendaciones:
+        recomendaciones.append("Mantener hábitos saludables y realizar controles periódicos según edad y factores de riesgo.")
+
+    # Deduplicar preservando orden
+    seen = set(); recs = []
+    for r in recomendaciones:
+        if r not in seen:
+            seen.add(r); recs.append(r)
+
+    return diagnostico, recs
+
+
 def predecir_paciente(paciente_id: int, modelo_id: int = None) -> dict:
     """Predice riesgo para un paciente específico cargando el modelo desde el disco."""
     from apps.etl.models import Paciente as P
-    paciente = P.objects.get(id=paciente_id)
+
+
+    # El modelo ETL define `id_paciente` (no `id`).
+    # El frontend envía `paciente_id` como el ID clínico (id_paciente).
+    try:
+        paciente = P.objects.get(id_paciente=paciente_id)
+    except P.DoesNotExist:
+        # Fallback por compatibilidad con posibles implementaciones previas
+        paciente = P.objects.get(id=paciente_id)
+
 
     datos = {f: getattr(paciente, f, 0) or 0 for f in FEATURES}
     for col in ['fumador', 'consumo_alcohol', 'antecedentes_familiares']:
@@ -178,9 +392,18 @@ def predecir_paciente(paciente_id: int, modelo_id: int = None) -> dict:
         riesgo_predicho=riesgo,
     )
 
+    diagnostico_detallado, recomendaciones = _construir_diagnostico_y_recomendaciones(
+        riesgo=riesgo,
+        probabilidad=probabilidad,
+        paciente_features=datos,
+    )
+
     return {
         'paciente_id': paciente_id,
         'riesgo_predicho': riesgo,
         'probabilidad': probabilidad,
+        'diagnostico_detallado': diagnostico_detallado,
+        'recomendaciones': recomendaciones,
         'distribucion_clases': dict(zip(le.classes_, proba.tolist())),
     }
+

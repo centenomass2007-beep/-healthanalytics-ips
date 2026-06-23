@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from apps.authentication.permissions import es_rol
 from rest_framework.response import Response
 from apps.analytics.services import obtener_kpis, segmentacion_por_edad
 from apps.analytics.services import distribucion_imc, segmentacion_por_diagnostico
@@ -7,7 +7,7 @@ from apps.etl.models import HistorialETL, Paciente
 from apps.ml.models import ModeloML
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([es_rol('administrador', 'medico', 'analista')])
 def dashboard_kpis(request):
     kpis = obtener_kpis()
     ultimo_etl = HistorialETL.objects.first()
