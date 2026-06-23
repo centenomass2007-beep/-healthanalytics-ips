@@ -1,0 +1,179 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — HealthAnalytics IPS{% endblock %}
+{% block nav_dashboard %}active text-white{% endblock %}
+{% block page_title %}Dashboard Clínico{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div class="row g-3 mb-4" id="kpi-cards">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-primary bg-opacity-10">
+          <i class="bi bi-people-fill text-primary fs-3"></i>
+        </div>
+        <div>
+          <div class="text-muted small">Total Pacientes</div>
+          <div class="fw-bold fs-4" id="kpi-total">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-danger bg-opacity-10">
+          <i class="bi bi-exclamation-triangle-fill text-danger fs-3"></i>
+        </div>
+        <div>
+          <div class="text-muted small">Pacientes Críticos</div>
+          <div class="fw-bold fs-4 text-danger" id="kpi-criticos">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-warning bg-opacity-10">
+          <i class="bi bi-heart-pulse-fill text-warning fs-3"></i>
+        </div>
+        <div>
+          <div class="text-muted small">Hipertensos</div>
+          <div class="fw-bold fs-4 text-warning" id="kpi-hipertensos">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-success bg-opacity-10">
+          <i class="bi bi-droplet-fill text-success fs-3"></i>
+        </div>
+        <div>
+          <div class="text-muted small">Diabéticos</div>
+          <div class="fw-bold fs-4 text-success" id="kpi-diabeticos">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Segunda fila KPIs -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted small">Fumadores</span>
+          <i class="bi bi-fire text-secondary"></i>
+        </div>
+        <div class="fw-semibold fs-5" id="kpi-fumadores">—</div>
+        <div class="text-muted" style="font-size:11px" id="pct-fumadores"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted small">Promedio IMC</span>
+          <i class="bi bi-bar-chart-fill text-info"></i>
+        </div>
+        <div class="fw-semibold fs-5" id="kpi-imc">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted small">Promedio Glucosa</span>
+          <i class="bi bi-activity text-pink"></i>
+        </div>
+        <div class="fw-semibold fs-5" id="kpi-glucosa">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gráficas principales -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 pb-0">
+        <h6 class="fw-semibold mb-0">Distribución por Riesgo</h6>
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        <canvas id="chart-riesgo" style="max-height:260px"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 pb-0">
+        <h6 class="fw-semibold mb-0">Pacientes por Rango de Edad</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="chart-edad" style="max-height:260px"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 pb-0">
+        <h6 class="fw-semibold mb-0">Clasificación IMC</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="chart-imc" style="max-height:240px"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white border-0 pb-0">
+        <h6 class="fw-semibold mb-0">Top 10 Diagnósticos</h6>
+      </div>
+      <div class="card-body">
+        <canvas id="chart-diagnosticos" style="max-height:240px"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Estado ETL + Modelo ML -->
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+        <h6 class="fw-semibold mb-0">Último Proceso ETL</h6>
+        <a href="/etl/" class="btn btn-sm btn-outline-primary">Gestionar</a>
+      </div>
+      <div class="card-body" id="etl-status">
+        <div class="text-muted small">Cargando...</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0 d-flex align-items-center justify-content-between">
+        <h6 class="fw-semibold mb-0">Modelo ML Activo</h6>
+        <a href="/ml/" class="btn btn-sm btn-outline-success">Ver modelos</a>
+      </div>
+      <div class="card-body" id="ml-status">
+        <div class="text-muted small">Cargando...</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

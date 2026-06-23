@@ -1,4 +1,54 @@
-node_modules/
-.env
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Django
 *.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+
+# Environment variables
+.env
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
+
+# Docker
+.docker/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# celery
+celerybeat-schedule*
+
+# coverage
+.coverage
+htmlcov/
+coverage/
+
+# pytest
+.pytest_cache/

@@ -1,0 +1,86 @@
+/* main.css — HealthAnalytics IPS */
+
+:root {
+  --sidebar-width: 240px;
+  --topbar-height: 52px;
+  --primary: #0d6efd;
+  --dark: #0f172a;
+}
+
+/* ─── Layout ──────────────────────────────────────────── */
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6fb; }
+
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--dark) !important;
+}
+
+.sidebar .nav-link {
+  border-radius: 8px;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.875rem;
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+  background: rgba(255,255,255,0.1);
+  color: #fff !important;
+}
+.sidebar .nav-link.active { font-weight: 600; }
+
+/* ─── Cards ───────────────────────────────────────────── */
+.card {
+  border-radius: 12px;
+  transition: box-shadow 0.2s;
+}
+.card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.09) !important; }
+
+/* ─── Topbar ──────────────────────────────────────────── */
+header.bg-white {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--topbar-height);
+}
+
+/* ─── Tables ──────────────────────────────────────────── */
+.table th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: #6c757d; }
+.table td { font-size: 0.85rem; }
+.table-hover tbody tr:hover { background: #f0f4ff; }
+
+/* ─── Badges / pills ──────────────────────────────────── */
+.bg-orange { background-color: #fd7e14 !important; }
+
+/* ─── Progress ────────────────────────────────────────── */
+.progress { border-radius: 999px; }
+
+/* ─── Scrollbars (webkit) ────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ─── Chart containers ────────────────────────────────── */
+canvas { max-width: 100%; }
+
+/* ─── Alerts ──────────────────────────────────────────── */
+.alert { border-radius: 10px; }
+
+/* ─── Spinner overlay ─────────────────────────────────── */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(255,255,255,.7);
+  z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ─── Responsive: colapsar sidebar en mobile ─────────── */
+@media (max-width: 768px) {
+  .sidebar { display: none !important; }
+}
