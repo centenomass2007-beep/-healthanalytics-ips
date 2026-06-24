@@ -3,6 +3,7 @@ Módulo de Reportes - exportación PDF, Excel, CSV
 """
 import io, csv
 from datetime import datetime
+from django.db.models import Q
 from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes
 from apps.authentication.permissions import es_rol
@@ -158,11 +159,33 @@ def exportar_pdf(request):
     story.append(Paragraph(f"Reporte Clínico de Pacientes y Alertas de Riesgo · Generado el: {fecha_actual}", meta_style))
     story.append(Spacer(1, 5))
     
-    # 2. Resumen Estadístico (KPIs)
-    total_pacientes = Paciente.objects.count()
-    pacientes_criticos = Paciente.objects.filter(es_critico=True).count()
-    pacientes_hipertensos = Paciente.objects.filter(presion_sistolica__gt=140).count()
-    pacientes_diabeticos = Paciente.objects.filter(glucosa__gt=126).count()
+    # 2. Construir queryset con filtros
+    qs = Paciente.objects.all()
+
+    riesgo = request.GET.get('riesgo')
+    sexo = request.GET.get('sexo')
+    critico = request.GET.get('critico')
+    busqueda = request.GET.get('busqueda')
+
+    if riesgo:
+        qs = qs.filter(riesgo_enfermedad=riesgo)
+    if sexo:
+        qs = qs.filter(sexo=sexo.upper())
+    if critico and critico.lower() == 'true':
+        qs = qs.filter(es_critico=True)
+    if busqueda:
+        qs = qs.filter(
+            Q(nombres__icontains=busqueda) |
+            Q(apellidos__icontains=busqueda) |
+            Q(diagnostico_preliminar__icontains=busqueda) |
+            Q(id_paciente__icontains=busqueda)
+        )
+
+    # 3. Resumen Estadístico (KPIs)
+    total_pacientes = qs.count()
+    pacientes_criticos = qs.filter(es_critico=True).count()
+    pacientes_hipertensos = qs.filter(presion_sistolica__gt=140).count()
+    pacientes_diabeticos = qs.filter(glucosa__gt=126).count()
     
     # Tabla resumen de KPIs
     resumen_data = [
@@ -194,11 +217,10 @@ def exportar_pdf(request):
     story.append(resumen_table)
     story.append(Spacer(1, 15))
     
-    # 3. Pacientes Críticos (Listado)
-    story.append(Paragraph("Listado de Pacientes Críticos / Alto Riesgo (Top 50)", section_title_style))
-    
-    pacientes_lista = Paciente.objects.filter(es_critico=True) | Paciente.objects.filter(riesgo_enfermedad='critico')
-    pacientes_lista = pacientes_lista.distinct()[:50]
+    # 4. Listado de Pacientes
+    story.append(Paragraph("Listado de Pacientes", section_title_style))
+
+    pacientes_lista = qs.order_by('id_paciente')
     
     if not pacientes_lista.exists():
         story.append(Paragraph("No se encontraron pacientes en estado crítico o de riesgo crítico.", table_cell_style))

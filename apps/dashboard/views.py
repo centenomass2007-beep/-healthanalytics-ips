@@ -7,7 +7,7 @@ from apps.etl.models import HistorialETL, Paciente
 from apps.ml.models import ModeloML
 
 @api_view(['GET'])
-@permission_classes([es_rol('administrador', 'medico', 'analista')])
+@permission_classes([es_rol('administrador', 'medico')])
 def dashboard_kpis(request):
     kpis = obtener_kpis()
     ultimo_etl = HistorialETL.objects.first()

@@ -3,11 +3,9 @@
 async function ejecutarETL() {
   const btn = document.getElementById('btn-run-etl');
   const progress = document.getElementById('etl-progress');
-  const resultado = document.getElementById('etl-resultado');
 
   btn.disabled = true;
   progress.classList.remove('d-none');
-  resultado.classList.add('d-none');
 
   try {
     const res = await authFetch('/api/etl/run/', { method: 'POST' });
@@ -72,42 +70,51 @@ async function subirDataset() {
 // subirDataset() definido una sola vez arriba (evita sobrescritura).
 
 function mostrarResultado(data) {
-  const sec = document.getElementById('etl-resultado');
-  sec.classList.remove('d-none');
-
   const estadoBadge = data.estado === 'completado'
-    ? '<span class="badge bg-success fs-6">✓ Completado</span>'
-    : '<span class="badge bg-danger fs-6">✗ Error</span>';
+    ? '<span class="badge bg-success">✓ Completado</span>'
+    : '<span class="badge bg-danger">✗ Error</span>';
 
   document.getElementById('etl-metricas').innerHTML = `
-    <div class="col-6 col-md-3">
-      <div class="border rounded p-3 text-center">
-        <div class="text-muted small">Registros Entrada</div>
-        <div class="fw-bold fs-4 text-primary">${data.registros_entrada ?? 0}</div>
-      </div>
+    <div class="border rounded p-2 text-center small flex-fill" style="min-width:120px">
+      <div class="text-muted">Registros Entrada</div>
+      <div class="fw-bold h5 text-primary mb-0">${data.registros_entrada ?? 0}</div>
     </div>
-    <div class="col-6 col-md-3">
-      <div class="border rounded p-3 text-center">
-        <div class="text-muted small">Registros Limpios</div>
-        <div class="fw-bold fs-4 text-success">${data.registros_limpios ?? 0}</div>
-      </div>
+    <div class="border rounded p-2 text-center small flex-fill" style="min-width:120px">
+      <div class="text-muted">Registros Limpios</div>
+      <div class="fw-bold h5 text-success mb-0">${data.registros_limpios ?? 0}</div>
     </div>
-    <div class="col-6 col-md-3">
-      <div class="border rounded p-3 text-center">
-        <div class="text-muted small">Duplicados</div>
-        <div class="fw-bold fs-4 text-warning">${data.duplicados_eliminados ?? 0}</div>
-      </div>
+    <div class="border rounded p-2 text-center small flex-fill" style="min-width:120px">
+      <div class="text-muted">Duplicados</div>
+      <div class="fw-bold h5 text-warning mb-0">${data.duplicados_eliminados ?? 0}</div>
     </div>
-    <div class="col-6 col-md-3">
-      <div class="border rounded p-3 text-center">
-        <div class="text-muted small">Tiempo (seg)</div>
-        <div class="fw-bold fs-4 text-info">${data.tiempo_ejecucion_seg ?? 0}s</div>
-      </div>
+    <div class="border rounded p-2 text-center small flex-fill" style="min-width:120px">
+      <div class="text-muted">Tiempo (seg)</div>
+      <div class="fw-bold h5 text-info mb-0">${data.tiempo_ejecucion_seg ?? 0}s</div>
     </div>
-    <div class="col-12 mt-2 text-center">${estadoBadge}</div>
+    <div class="w-100 text-center mt-1">${estadoBadge}</div>
   `;
 
-  document.getElementById('etl-log').textContent = data.log_detalle || 'Sin log disponible';
+  const logEl = document.getElementById('etl-log');
+  logEl.textContent = data.log_detalle || 'Sin log disponible';
+  logEl.classList.add('d-none');
+
+  const btn = document.getElementById('btn-toggle-log');
+  if (data.log_detalle && data.log_detalle.length > 50) {
+    btn.classList.remove('d-none');
+    btn.innerHTML = '<i class="bi bi-eye me-1"></i>Ver';
+  } else {
+    btn.classList.add('d-none');
+  }
+}
+
+function toggleLog() {
+  const logEl = document.getElementById('etl-log');
+  const btn = document.getElementById('btn-toggle-log');
+  const hidden = logEl.classList.contains('d-none');
+  logEl.classList.toggle('d-none');
+  btn.innerHTML = hidden
+    ? '<i class="bi bi-eye-slash me-1"></i>Ocultar'
+    : '<i class="bi bi-eye me-1"></i>Ver';
 }
 
 async function cargarHistorial() {

@@ -162,8 +162,8 @@ function mostrarMetricas(metricas, modelo, matrix) {
         datasets: [{
           label: 'Valor (%)',
           data: [acc, prec, rec, f1],
-          backgroundColor: ['#0d6efd88', '#19875488', '#ffc10788', '#0dcaf088'],
-          borderColor: ['#0d6efd', '#198754', '#ffc107', '#0dcaf0'],
+          backgroundColor: ['#4B569488', '#4B8C6E88', '#C8844A88', '#7288AE88'],
+          borderColor: ['#4B5694', '#4B8C6E', '#C8844A', '#7288AE'],
           borderWidth: 2,
           borderRadius: 6
         }]
@@ -334,7 +334,7 @@ async function cargarModelos() {
     tbody.innerHTML = data.filter(m => m && typeof m === 'object').map(m => `
       <tr>
         <td class="fw-semibold small">${m.nombre ?? '—'}</td>
-        <td><span class="badge bg-info text-dark">${String(m.algoritmo ?? '').replace('_', ' ')}</span></td>
+        <td><span class="badge" style="background:#4B5694;color:#fff">${String(m.algoritmo ?? '').replace('_', ' ')}</span></td>
         <td>${m.accuracy != null ? (m.accuracy * 100).toFixed(1) + '%' : '—'}</td>
         <td>${m.f1_score != null ? (m.f1_score * 100).toFixed(1) + '%' : '—'}</td>
         <td class="small text-muted">${formatFecha(m.fecha_entrenamiento)}</td>

@@ -86,7 +86,7 @@ function renderGraficaEdad(data) {
     data: {
       labels: data.map(d => d.rango_edad),
       datasets: [{ label: 'Pacientes', data: data.map(d => d.total),
-                   backgroundColor: '#0d6efd99', borderColor: '#0d6efd',
+                   backgroundColor: '#4B569499', borderColor: '#4B5694',
                    borderWidth: 1, borderRadius: 6 }]
     },
     options: { responsive: true, plugins: { legend: { display: false } },
@@ -118,7 +118,7 @@ function renderGraficaDiagnosticos(data) {
     data: {
       labels: data.map(d => d.diagnostico_preliminar || 'Sin diagnóstico'),
       datasets: [{ label: 'Casos', data: data.map(d => d.total),
-                   backgroundColor: '#6610f299', borderColor: '#6610f2',
+                   backgroundColor: '#4B569499', borderColor: '#4B5694',
                    borderWidth: 1, borderRadius: 4 }]
     },
     options: {

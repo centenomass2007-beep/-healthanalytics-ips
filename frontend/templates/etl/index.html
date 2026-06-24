@@ -19,11 +19,10 @@
           <i class="bi bi-lightning-charge-fill me-2"></i>Ejecutar ETL Ahora
         </button>
         <div id="etl-progress" class="d-none">
-          <div class="progress mb-2">
-            <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
-                 style="width:100%" role="progressbar"></div>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            <small class="text-muted">Procesando datos clínicos...</small>
           </div>
-          <small class="text-muted">Procesando datos clínicos...</small>
         </div>
       </div>
     </div>
@@ -49,17 +48,27 @@
 </div>
 
 <!-- Resultado del ETL -->
-<div class="card border-0 shadow-sm mb-4 d-none" id="etl-resultado">
+<div class="card border-0 shadow-sm mb-4" id="etl-resultado">
   <div class="card-header bg-white border-0">
     <h6 class="fw-semibold mb-0">Resultado del Proceso</h6>
   </div>
   <div class="card-body">
-    <div class="row g-3" id="etl-metricas"></div>
+    <div class="d-flex flex-wrap gap-2" id="etl-metricas">
+      <div class="text-center text-muted p-3 flex-fill" id="etl-placeholder">
+        Ejecuta un proceso ETL para ver los resultados
+      </div>
+    </div>
     <hr>
     <div class="mt-2">
-      <h6 class="small fw-semibold text-muted">LOG DETALLADO</h6>
-      <pre id="etl-log" class="bg-dark text-success p-3 rounded small"
-           style="max-height:250px;overflow-y:auto;font-size:12px"></pre>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <h6 class="small fw-semibold text-muted mb-0">LOG DETALLADO</h6>
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2 d-none" id="btn-toggle-log"
+                onclick="toggleLog()" style="font-size:10px;line-height:1.5">
+          <i class="bi bi-eye me-1"></i>Ver
+        </button>
+      </div>
+      <pre id="etl-log" class="bg-dark text-success rounded small mb-0 d-none"
+           style="height:130px;overflow-y:auto;font-size:11px;padding:6px 10px;white-space:pre-wrap">Sin log disponible</pre>
     </div>
   </div>
 </div>

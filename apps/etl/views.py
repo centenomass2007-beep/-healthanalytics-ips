@@ -1,11 +1,12 @@
 import os
 from django.conf import settings
+from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
-from apps.authentication.permissions import es_rol
 from rest_framework.response import Response
+from apps.authentication.permissions import es_rol
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from .models import Paciente, HistorialETL
@@ -42,9 +43,17 @@ class PacienteViewSet(viewsets.ReadOnlyModelViewSet):
         riesgo  = self.request.query_params.get('riesgo')
         critico = self.request.query_params.get('critico')
         sexo    = self.request.query_params.get('sexo')
+        busqueda = self.request.query_params.get('busqueda')
         if riesgo:           qs = qs.filter(riesgo_enfermedad=riesgo)
         if critico == 'true': qs = qs.filter(es_critico=True)
         if sexo:             qs = qs.filter(sexo=sexo)
+        if busqueda:
+            qs = qs.filter(
+                Q(nombres__icontains=busqueda) |
+                Q(apellidos__icontains=busqueda) |
+                Q(diagnostico_preliminar__icontains=busqueda) |
+                Q(id_paciente__icontains=busqueda)
+            )
         return qs
 
 

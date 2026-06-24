@@ -38,9 +38,29 @@
         <label class="form-label small fw-semibold mb-1">Buscar</label>
         <div class="input-group input-group-sm">
           <input type="text" class="form-control" id="busqueda" placeholder="Nombre, diagnóstico..."
-                 onkeyup="filtrarLocal()">
+                 onkeyup="buscarGlobal()">
           <span class="input-group-text"><i class="bi bi-search"></i></span>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-prediccion" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Resultado de Predicción</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="prediccion-body">
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary"></div>
+          <p class="mt-2">Procesando predicción...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
@@ -53,13 +73,7 @@
       Lista de Pacientes <span class="badge bg-primary ms-2" id="badge-total">0</span>
     </h6>
     <div class="d-flex gap-2">
-      <button onclick="descargarArchivo('/api/reportes/csv/', 'pacientes.csv')" class="btn btn-sm btn-outline-secondary">
-        <i class="bi bi-filetype-csv me-1"></i>CSV
-      </button>
-      <button onclick="descargarArchivo('/api/reportes/excel/', 'reporte_pacientes.xlsx')" class="btn btn-sm btn-outline-success">
-        <i class="bi bi-file-earmark-excel me-1"></i>Excel
-      </button>
-      <button onclick="descargarArchivo('/api/reportes/pdf/', 'reporte_analitica_clinica.pdf')" class="btn btn-sm btn-outline-danger">
+      <button onclick="exportarPdfFiltrado()" class="btn btn-sm btn-outline-danger">
         <i class="bi bi-file-earmark-pdf me-1"></i>PDF
       </button>
     </div>
@@ -71,11 +85,11 @@
           <tr>
             <th>ID</th><th>Nombre</th><th>Edad</th><th>Sexo</th>
             <th>IMC</th><th>Glucosa</th><th>P.Sistólica</th>
-            <th>Diagnóstico</th><th>Riesgo</th><th>Crítico</th>
+            <th>Diagnóstico</th><th>Riesgo</th><th>Crítico</th><th>Pred.</th>
           </tr>
         </thead>
         <tbody id="pacientes-tbody">
-          <tr><td colspan="10" class="text-center text-muted py-5">
+          <tr><td colspan="11" class="text-center text-muted py-5">
             <div class="spinner-border spinner-border-sm me-2"></div>Cargando pacientes...
           </td></tr>
         </tbody>
