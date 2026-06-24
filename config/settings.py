@@ -18,7 +18,7 @@ if allowed_hosts_raw:
     ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_raw.split(',') if h.strip()]
 else:
     # Fallback limitado para desarrollo local.
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    ALLOWED_HOSTS = ["https://healthanalytics-ips-1-o4ts.onrender.com",'localhost', '127.0.0.1']
 
 
 # ─── Aplicaciones ─────────────────────────────────────────────────────────────
