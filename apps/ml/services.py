@@ -3,13 +3,7 @@ import pickle
 import numpy as np
 import pandas as pd
 from django.conf import settings
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.metrics import (accuracy_score, precision_score,
-                             recall_score, f1_score, confusion_matrix)
+
 from apps.etl.models import Paciente
 from .models import ModeloML, PrediccionPaciente
 
@@ -17,11 +11,10 @@ FEATURES = ['edad', 'imc', 'glucosa', 'colesterol', 'presion_sistolica',
             'presion_diastolica', 'frecuencia_cardiaca', 'saturacion_oxigeno',
             'temperatura', 'fumador', 'consumo_alcohol', 'antecedentes_familiares']
 
-ALGORITMOS = {
-    'logistic_regression': LogisticRegression(max_iter=500, random_state=42),
-    'decision_tree': DecisionTreeClassifier(max_depth=8, random_state=42),
-    'random_forest': RandomForestClassifier(n_estimators=100, random_state=42),
-}
+# ALGORITMOS se define dentro de `entrenar_modelo` (lazy import)
+ALGORITMOS = {}
+
+
 
 
 def _preparar_dataset():
@@ -48,7 +41,23 @@ def _preparar_dataset():
 
 def entrenar_modelo(algoritmo: str = 'random_forest') -> ModeloML:
     """Entrena el modelo seleccionado y persiste métricas."""
-    if algoritmo not in ALGORITMOS:
+    # Lazy imports para evitar cargar sklearn/scipy en el arranque (Render OOM)
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler, LabelEncoder
+    from sklearn.metrics import (
+        accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+    )
+
+    algoritmos = {
+        'logistic_regression': LogisticRegression(max_iter=500, random_state=42),
+        'decision_tree': DecisionTreeClassifier(max_depth=8, random_state=42),
+        'random_forest': RandomForestClassifier(n_estimators=100, random_state=42),
+    }
+
+    if algoritmo not in algoritmos:
         raise ValueError(f"Algoritmo '{algoritmo}' no soportado")
 
     X, y, le, ids = _preparar_dataset()
@@ -59,7 +68,8 @@ def entrenar_modelo(algoritmo: str = 'random_forest') -> ModeloML:
     X_train_s = scaler.fit_transform(X_train)
     X_test_s = scaler.transform(X_test)
 
-    clf = ALGORITMOS[algoritmo]
+    clf = algoritmos[algoritmo]
+
 
     # Nota: para RandomForest/DecisionTree el escalado no aporta y puede
     # empeorar en algunos escenarios. Usamos escalado solo para modelos
